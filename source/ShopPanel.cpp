@@ -939,6 +939,7 @@ const Outfit *ShopPanel::Zone::GetOutfit() const
 void ShopPanel::DrawShipsSidebar()
 {
 	const Font &font = FontSet::Get(14);
+	const Color &dark = *GameData::Colors().Get("dark");
 	const Color &medium = *GameData::Colors().Get("medium");
 	const Color &bright = *GameData::Colors().Get("bright");
 	const Color &bg = *GameData::Colors().Get("panel background");
@@ -1039,6 +1040,13 @@ void ShopPanel::DrawShipsSidebar()
 		if(isSelected && playerShips.size() > 1 && ship->OutfitCount(selectedOutfit))
 			PointerShader::Draw(Point(point.X() - static_cast<int>(ICON_TILE / 3), point.Y()),
 				Point(1., 0.), 14.f, 12.f, 0., Color(.9f, .9f, .9f, .2f));
+
+		if(ship->IsParked())
+		{
+			static const Point CORNER = .35 * Point(ICON_TILE, ICON_TILE);
+			FillShader::Fill(point + CORNER, Point(6., 6.), dark);
+			FillShader::Fill(point + CORNER, Point(4., 4.), isSelected ? bright : medium);
+		}
 
 		point.X() += ICON_TILE;
 	}
