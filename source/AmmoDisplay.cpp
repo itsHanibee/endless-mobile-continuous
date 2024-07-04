@@ -164,4 +164,3 @@ bool AmmoDisplay::Click(const Rectangle &clickBox)
 		}
 	return reselected;
 }
-
