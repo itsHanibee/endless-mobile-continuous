@@ -62,10 +62,20 @@ namespace {
 		return cancelers;
 	}
 
-	bool IsStranded(const Ship &ship)
+	bool NeedsFuel(const Ship &ship)
 	{
 		return ship.GetSystem() && !ship.IsEnteringHyperspace() && !ship.GetSystem()->HasFuelFor(ship)
-			&& ship.NeedsFuel();
+				&& ship.NeedsFuel();
+	}
+
+	bool NeedsEnergy(const Ship &ship)
+	{
+		return ship.GetSystem() && !ship.IsEnteringHyperspace() && ship.NeedsEnergy();
+	}
+
+	bool IsStranded(const Ship &ship)
+	{
+		return NeedsFuel(ship) || NeedsEnergy(ship);
 	}
 
 	// Check if the given ship can "swarm" the targeted ship, e.g. to provide anti-missile cover.
@@ -768,7 +778,7 @@ void AI::Step(Command &activeCommands)
 			if(shipToAssist->IsDestroyed() || shipToAssist->GetSystem() != it->GetSystem()
 					|| shipToAssist->IsLanding() || shipToAssist->IsHyperspacing()
 					|| shipToAssist->GetGovernment()->IsEnemy(gov)
-					|| (!shipToAssist->IsDisabled() && !shipToAssist->NeedsFuel()))
+					|| (!shipToAssist->IsDisabled() && !shipToAssist->NeedsFuel() && !shipToAssist->NeedsEnergy()))
 			{
 				shipToAssist.reset();
 				it->SetShipToAssist(nullptr);
@@ -801,7 +811,7 @@ void AI::Step(Command &activeCommands)
 
 		// Stranded ships that have a helper need to stop and be assisted.
 		bool strandedWithHelper = isStranded &&
-			(HasHelper(*it, isStranded) || it->GetPersonality().IsDerelict() || it->IsYours());
+			(HasHelper(*it, NeedsFuel(*it), NeedsEnergy(*it)) || it->GetPersonality().IsDerelict() || it->IsYours());
 
 		// Behave in accordance with personality traits.
 		if(isPresent && personality.IsSwarming() && !strandedWithHelper)
@@ -1156,7 +1166,9 @@ bool AI::CanPursue(const Ship &ship, const Ship &target) const
 // Check if the ship is being helped, and if not, ask for help.
 void AI::AskForHelp(Ship &ship, bool &isStranded, const Ship *flagship)
 {
-	if(HasHelper(ship, isStranded))
+	bool needsFuel = NeedsFuel(ship);
+	bool needsEnergy = NeedsEnergy(ship);
+	if(HasHelper(ship, needsFuel, needsEnergy))
 		isStranded = true;
 	else if(!Random::Int(30))
 	{
@@ -1206,7 +1218,7 @@ void AI::AskForHelp(Ship &ship, bool &isStranded, const Ship *flagship)
 			}
 
 			// Check if this ship is physically able to help.
-			if(!CanHelp(ship, *helper, isStranded))
+			if(!CanHelp(ship, *helper, needsFuel, needsEnergy))
 				continue;
 
 			// Prefer fast ships over slow ones.
@@ -1230,7 +1242,7 @@ void AI::AskForHelp(Ship &ship, bool &isStranded, const Ship *flagship)
 
 
 // Determine if the selected ship is physically able to render assistance.
-bool AI::CanHelp(const Ship &ship, const Ship &helper, const bool needsFuel) const
+bool AI::CanHelp(const Ship &ship, const Ship &helper, const bool needsFuel, const bool needsEnergy) const
 {
 	// A ship being assisted cannot assist.
 	if(helperList.find(&helper) != helperList.end())
@@ -1247,8 +1259,8 @@ bool AI::CanHelp(const Ship &ship, const Ship &helper, const bool needsFuel) con
 			|| (ship.IsDisabled() && helper.GetGovernment() != ship.GetGovernment()))
 		return false;
 
-	// If the helper has insufficient fuel, it cannot help this ship unless this ship is also disabled.
-	if(!ship.IsDisabled() && needsFuel && !helper.CanRefuel(ship))
+	// If the helper has insufficient fuel or energy, it cannot help this ship unless this ship is also disabled.
+	if(!ship.IsDisabled() && ((needsFuel && !helper.CanRefuel(ship)) || (needsEnergy && !helper.CanGiveEnergy(ship))))
 		return false;
 
 	return true;
@@ -1256,13 +1268,13 @@ bool AI::CanHelp(const Ship &ship, const Ship &helper, const bool needsFuel) con
 
 
 
-bool AI::HasHelper(const Ship &ship, const bool needsFuel)
+bool AI::HasHelper(const Ship &ship, const bool needsFuel, const bool needsEnergy)
 {
 	// Do we have an existing ship that was asked to assist?
 	if(helperList.find(&ship) != helperList.end())
 	{
 		shared_ptr<Ship> helper = helperList[&ship].lock();
-		if(helper && helper->GetShipToAssist().get() == &ship && CanHelp(ship, *helper, needsFuel))
+		if(helper && helper->GetShipToAssist().get() == &ship && CanHelp(ship, *helper, needsFuel, needsEnergy))
 			return true;
 		else
 			helperList.erase(&ship);
