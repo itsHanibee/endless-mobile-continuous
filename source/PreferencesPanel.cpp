@@ -866,6 +866,7 @@ void PreferencesPanel::DrawSettings()
 		FIGHTER_REPAIR,
 		"Fighters transfer cargo",
 		"Rehire extra crew when lost",
+		"Automatically unpark flagship",
 		"Onscreen Joystick",
 		"",
 		"Map",
