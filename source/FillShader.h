@@ -16,8 +16,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #ifndef FILL_SHADER_H_
 #define FILL_SHADER_H_
 
-class Point;
 class Color;
+class Point;
 
 
 

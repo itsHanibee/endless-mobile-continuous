@@ -18,8 +18,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <vector>
 
-class Fleet;
 class DataNode;
+class Fleet;
 
 
 
