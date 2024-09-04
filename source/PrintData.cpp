@@ -600,12 +600,8 @@ namespace {
 			{
 				cout << it.first << "::";
 				const Planet &planet = it.second;
-				for(auto &whenText : planet.Description())
-					cout << whenText.second;
-				cout << "::";
-				for(auto &whenText : planet.GetPort().Description())
-					cout << whenText.second;
-				cout << "\n";
+				cout << planet.Description() << "::";
+				cout << planet.GetPort().Description() << "\n";
 			}
 		};
 

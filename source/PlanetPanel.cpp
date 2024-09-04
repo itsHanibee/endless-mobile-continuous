@@ -149,7 +149,7 @@ void PlanetPanel::Draw()
 		Rectangle box = ui.GetBox("content");
 		if(box.Width() != text.WrapWidth())
 			text.SetWrapWidth(box.Width());
-		text.Wrap(planet.Description().ToString(player.Conditions()));
+		text.Wrap(planet.Description());
 		text.Draw(box.TopLeft(), *GameData::Colors().Get("bright"));
 	}
 }
