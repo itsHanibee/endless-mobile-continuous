@@ -24,7 +24,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 
 class DataNode;
-class FormationPattern;
 class Government;
 class Ship;
 class System;
@@ -67,7 +66,6 @@ private:
 	int frequency = 100;
 
 	std::list<std::shared_ptr<Ship>> ships;
-	const FormationPattern *formationPattern = nullptr;
 	const Government *government = nullptr;
 	Personality personality;
 	Phrase hail;

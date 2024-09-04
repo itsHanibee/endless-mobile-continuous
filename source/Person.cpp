@@ -16,7 +16,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Person.h"
 
 #include "DataNode.h"
-#include "FormationPattern.h"
 #include "GameData.h"
 #include "Government.h"
 #include "Ship.h"
@@ -34,8 +33,6 @@ void Person::Load(const DataNode &node)
 			location.Load(child);
 		else if(child.Token(0) == "frequency" && child.Size() >= 2)
 			frequency = child.Value(1);
-		else if(child.Token(0) == "formation" && child.Size() >= 2)
-			formationPattern = GameData::Formations().Get(child.Token(1));
 		else if(child.Token(0) == "ship" && child.Size() >= 2)
 		{
 			// Name ships that are not the flagship with the name provided, if any.
@@ -62,11 +59,7 @@ void Person::Load(const DataNode &node)
 void Person::FinishLoading()
 {
 	for(const shared_ptr<Ship> &ship : ships)
-	{
 		ship->FinishLoading(true);
-		if(formationPattern)
-			ship->SetFormationPattern(formationPattern);
-	}
 }
 
 
